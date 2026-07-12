@@ -1,0 +1,2 @@
+# GET-EDID
+获取显示器EDID

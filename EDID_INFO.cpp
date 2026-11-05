@@ -872,7 +872,21 @@ void PrintEDIDInfo(const vector<BYTE>& edid)
 
     // Extension blocks
     int available = (int)edid.size() / 128;
-    int extCount = edid[126];
+    int declared = edid[126];
+    int extCount = declared;
+    int hfCount = -1;
+
+    // HDMI 2.1 HF-EEODB:
+    // CEA 扩展块 0x84 处的 E2 78 数据块会携带真实扩展块数量 (0x86)。
+    // 这时 base block 的 edid[126] 可能仍为 1。
+    if (available >= 2 &&
+        edid[128] == 0x02 &&
+        (edid[132] & 0xE0) == 0xE0 &&
+        edid[133] == 0x78)
+    {
+        hfCount = edid[134];
+        extCount = hfCount;
+    }
 
     if (extCount > available - 1)
         extCount = available - 1;
@@ -880,6 +894,18 @@ void PrintEDIDInfo(const vector<BYTE>& edid)
     if (extCount > 0)
     {
         cout << "\n----------- EXTENSIONS -----------\n";
+
+        if (extCount != declared)
+        {
+            cout << "Extension count: declared " << declared;
+
+            if (hfCount >= 0)
+                cout << ", HF-EEODB " << hfCount;
+            else
+                cout << ", available " << (available - 1);
+
+            cout << endl;
+        }
 
         for (int e = 1; e <= extCount; e++)
         {

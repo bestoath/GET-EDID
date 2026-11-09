@@ -171,6 +171,7 @@ static void PrintDetailedTiming(const BYTE* d, const char* label)
     // 交错模式: DTD 中垂直行数是每场的行数, 显示时按完整帧换算
     int vActiveDisplay = interlaced ? vActive * 2 : vActive;
     int vTotalDisplay  = interlaced ? vTotal * 2 : vTotal;
+    int vBlankDisplay  = interlaced ? vBlank * 2 : vBlank;
 
     static const char* syncTypes[] = {
         "Analog composite", "Bipolar analog composite",
@@ -186,7 +187,8 @@ static void PrintDetailedTiming(const BYTE* d, const char* label)
          << hActive << "x" << vActiveDisplay << (interlaced ? "i" : "p")
          << " @ " << Fmt(refresh, 2) << "Hz"
          << ", clock " << Fmt(clock10k / 100.0, 2) << "MHz"
-         << ", total " << hTotal << "x" << vTotalDisplay;
+         << ", total " << hTotal << "x" << vTotalDisplay
+         << ", blank H " << hBlank << " V " << vBlankDisplay;
 
     if (widthMm && heightMm)
         cout << ", " << widthMm << "x" << heightMm << "mm";
@@ -706,7 +708,9 @@ static void PrintDisplayID(const BYTE* block)
         cout << "    Timing " << (i + 1) << "     : "
              << hActive << "x" << vActive
              << " @ " << Fmt(refresh, 2) << "Hz"
-             << ", clock " << Fmt(clock10k / 100.0, 2) << "MHz";
+             << ", clock " << Fmt(clock10k / 100.0, 2) << "MHz"
+             << ", total " << hTotal << "x" << vTotal
+             << ", blank H " << hBlank << " V " << vBlank;
 
         if (t[3] & 0x80)
             cout << " (native)";
@@ -809,8 +813,11 @@ void PrintEDIDInfo(const vector<BYTE>& edid)
         << "Product ID   : 0x"
         << hex
         << uppercase
+        << setw(4)
+        << setfill('0')
         << productID
         << dec
+        << setfill(' ')
         << endl;
 
 
